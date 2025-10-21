@@ -1,0 +1,26 @@
+{
+  "name": "klaviyo-campaign-reporter",
+  "version": "1.0.0",
+  "description": "Extract Klaviyo campaign performance data and render campaign HTML for reporting",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "generate-report": "ts-node src/index.ts"
+  },
+  "keywords": ["klaviyo", "campaign", "reporting", "email-marketing"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "puppeteer": "^21.6.1",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
