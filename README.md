@@ -15,6 +15,29 @@ A Node.js application that integrates with the Klaviyo API to extract campaign p
   - Embedded campaign HTML renders
   - Professional styling and layout
 - **Individual Campaign Exports**: Save individual campaign HTML renders for archival
+- **Web Interface**: User-friendly browser interface (no coding required!)
+- **Multiple Testing Options**: Browser-only, Docker, online platforms (Replit, CodeSandbox, etc.)
+
+## 🚀 Quick Start - No Code Required!
+
+**Want to test this without any coding?** We've got you covered!
+
+### Easiest Option: Browser-Only
+
+1. Download `web-interface.html` from this repository
+2. Open it in your browser (just double-click!)
+3. Enter your Klaviyo API key
+4. Generate reports instantly!
+
+**👉 For more no-code testing options, see [NO-CODE-TESTING.md](NO-CODE-TESTING.md)**
+
+Options include:
+- Browser-only (no installation)
+- Replit (online IDE)
+- CodeSandbox (instant preview)
+- Docker (one command)
+- Glitch (remix & run)
+- Railway/Render (cloud deployment)
 
 ## Prerequisites
 
@@ -58,7 +81,22 @@ OUTPUT_FORMAT=pdf
 
 ## Usage
 
-### Generate Reports
+### Web Interface (Recommended for Non-Developers)
+
+Start the web server:
+```bash
+npm run web
+```
+
+Then open your browser to `http://localhost:3000` and use the friendly interface to:
+- Enter your API key
+- Select number of campaigns
+- Generate and download reports
+- Export individual campaign HTML
+
+### Command-Line Interface
+
+Generate Reports
 
 Run the application to generate campaign reports:
 

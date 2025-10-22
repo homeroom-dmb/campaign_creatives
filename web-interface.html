@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klaviyo Campaign Reporter - Web Interface</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e8ed;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .input-hint {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+
+    .status.loading {
+      background: #e3f2fd;
+      color: #1565c0;
+      border-left: 4px solid #1565c0;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-left: 4px solid #2e7d32;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+      border-left: 4px solid #c62828;
+    }
+
+    .results {
+      margin-top: 30px;
+      display: none;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .campaign-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .campaign-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .campaign-meta {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .download-btn {
+      background: #28a745;
+      padding: 8px 16px;
+      font-size: 14px;
+      margin-top: 10px;
+      width: auto;
+      display: inline-block;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Klaviyo Campaign Reporter</h1>
+    <p class="subtitle">Generate beautiful reports for your Klaviyo campaigns</p>
+
+    <form id="reportForm">
+      <div class="form-group">
+        <label for="apiKey">Klaviyo Private API Key</label>
+        <input
+          type="password"
+          id="apiKey"
+          placeholder="pk_..."
+          required
+        >
+        <div class="input-hint">Your API key is stored locally and never sent to any server except Klaviyo</div>
+      </div>
+
+      <div class="form-group">
+        <label for="campaignLimit">Number of Campaigns</label>
+        <input
+          type="number"
+          id="campaignLimit"
+          value="5"
+          min="1"
+          max="50"
+          required
+        >
+        <div class="input-hint">How many recent campaigns to fetch (1-50)</div>
+      </div>
+
+      <div class="form-group">
+        <label for="outputFormat">Report Format</label>
+        <select id="outputFormat">
+          <option value="html">HTML</option>
+          <option value="json">JSON (Data Only)</option>
+        </select>
+      </div>
+
+      <button type="submit" id="submitBtn">Generate Report</button>
+    </form>
+
+    <div id="status" class="status"></div>
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('reportForm');
+    const statusDiv = document.getElementById('status');
+    const resultsDiv = document.getElementById('results');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const apiKey = document.getElementById('apiKey').value;
+      const campaignLimit = parseInt(document.getElementById('campaignLimit').value);
+      const outputFormat = document.getElementById('outputFormat').value;
+
+      // Reset UI
+      statusDiv.className = 'status show loading';
+      statusDiv.innerHTML = '<div class="spinner"></div>Fetching campaigns from Klaviyo...';
+      resultsDiv.className = 'results';
+      resultsDiv.innerHTML = '';
+      submitBtn.disabled = true;
+
+      try {
+        // Fetch campaigns
+        const campaigns = await fetchCampaigns(apiKey, campaignLimit);
+
+        statusDiv.innerHTML = '<div class="spinner"></div>Extracting campaign data and metrics...';
+
+        // Extract full campaign data
+        const reports = [];
+        for (let i = 0; i < campaigns.length; i++) {
+          statusDiv.innerHTML = `<div class="spinner"></div>Processing campaign ${i + 1} of ${campaigns.length}...`;
+          const report = await extractCampaign(apiKey, campaigns[i]);
+          reports.push(report);
+        }
+
+        // Show success
+        statusDiv.className = 'status show success';
+        statusDiv.innerHTML = `✓ Successfully extracted ${reports.length} campaigns!`;
+
+        // Display results
+        if (outputFormat === 'html') {
+          displayHTMLReport(reports);
+        } else {
+          displayJSONReport(reports);
+        }
+
+        submitBtn.disabled = false;
+
+      } catch (error) {
+        statusDiv.className = 'status show error';
+        statusDiv.innerHTML = `✗ Error: ${error.message}`;
+        submitBtn.disabled = false;
+      }
+    });
+
+    async function fetchCampaigns(apiKey, limit) {
+      const response = await fetch(`https://a.klaviyo.com/api/campaigns?page[size]=${limit}`, {
+        headers: {
+          'Authorization': `Klaviyo-API-Key ${apiKey}`,
+          'revision': '2024-10-15',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.errors?.[0]?.detail || 'Failed to fetch campaigns');
+      }
+
+      const data = await response.json();
+      return data.data;
+    }
+
+    async function extractCampaign(apiKey, campaign) {
+      const report = {
+        campaign: campaign,
+        message: null,
+        metrics: null,
+        html_content: null
+      };
+
+      // Fetch campaign messages
+      try {
+        const messagesResponse = await fetch(
+          `https://a.klaviyo.com/api/campaigns/${campaign.id}/campaign-messages`,
+          {
+            headers: {
+              'Authorization': `Klaviyo-API-Key ${apiKey}`,
+              'revision': '2024-10-15',
+              'Accept': 'application/json'
+            }
+          }
+        );
+
+        if (messagesResponse.ok) {
+          const messagesData = await messagesResponse.json();
+          if (messagesData.data && messagesData.data.length > 0) {
+            report.message = messagesData.data[0];
+            report.html_content = messagesData.data[0].attributes.content?.html;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch messages for campaign', campaign.id);
+      }
+
+      // Fetch metrics
+      try {
+        const metricsResponse = await fetch(
+          `https://a.klaviyo.com/api/campaign-values-reports/${campaign.id}/campaign-values-report-data`,
+          {
+            headers: {
+              'Authorization': `Klaviyo-API-Key ${apiKey}`,
+              'revision': '2024-10-15',
+              'Accept': 'application/json'
+            }
+          }
+        );
+
+        if (metricsResponse.ok) {
+          const metricsData = await metricsResponse.json();
+          if (metricsData.data && metricsData.data.attributes) {
+            const data = metricsData.data.attributes.data;
+            const recipients = data.recipients || 0;
+
+            report.metrics = {
+              recipients: recipients,
+              opens: data.opens || 0,
+              clicks: data.clicks || 0,
+              unique_opens: data.unique_opens || 0,
+              unique_clicks: data.unique_clicks || 0,
+              bounces: data.bounces || 0,
+              unsubscribes: data.unsubscribes || 0,
+              spam_complaints: data.spam_complaints || 0,
+              open_rate: recipients > 0 ? ((data.unique_opens || 0) / recipients) * 100 : 0,
+              click_rate: recipients > 0 ? ((data.unique_clicks || 0) / recipients) * 100 : 0,
+              bounce_rate: recipients > 0 ? ((data.bounces || 0) / recipients) * 100 : 0,
+              unsubscribe_rate: recipients > 0 ? ((data.unsubscribes || 0) / recipients) * 100 : 0
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch metrics for campaign', campaign.id);
+      }
+
+      return report;
+    }
+
+    function displayHTMLReport(reports) {
+      resultsDiv.className = 'results show';
+
+      let html = '<h2 style="margin-bottom: 20px;">Campaign Reports</h2>';
+
+      reports.forEach(report => {
+        const name = report.campaign.attributes.name;
+        const status = report.campaign.attributes.status;
+        const sendTime = report.campaign.attributes.send_time
+          ? new Date(report.campaign.attributes.send_time).toLocaleString()
+          : 'Not sent';
+
+        html += `<div class="campaign-card">`;
+        html += `<div class="campaign-name">${escapeHtml(name)}</div>`;
+        html += `<div class="campaign-meta">Status: <strong>${status}</strong> | Sent: ${sendTime}</div>`;
+
+        if (report.metrics) {
+          html += `<div class="metrics">`;
+          html += `<div class="metric"><div class="metric-label">Recipients</div><div class="metric-value">${report.metrics.recipients.toLocaleString()}</div></div>`;
+          html += `<div class="metric"><div class="metric-label">Opens</div><div class="metric-value">${report.metrics.unique_opens.toLocaleString()}</div></div>`;
+          html += `<div class="metric"><div class="metric-label">Clicks</div><div class="metric-value">${report.metrics.unique_clicks.toLocaleString()}</div></div>`;
+          html += `<div class="metric"><div class="metric-label">Open Rate</div><div class="metric-value">${report.metrics.open_rate.toFixed(1)}%</div></div>`;
+          html += `<div class="metric"><div class="metric-label">Click Rate</div><div class="metric-value">${report.metrics.click_rate.toFixed(1)}%</div></div>`;
+          html += `</div>`;
+        }
+
+        if (report.html_content) {
+          html += `<button class="download-btn" onclick="downloadHTML('${escapeHtml(name)}', \`${escapeHtml(report.html_content)}\`)">Download Campaign HTML</button>`;
+        }
+
+        html += `</div>`;
+      });
+
+      // Add download full report button
+      html += `<button class="download-btn" style="width: 100%; margin-top: 20px;" onclick="downloadFullReport()">Download Full HTML Report</button>`;
+
+      resultsDiv.innerHTML = html;
+
+      // Store reports globally for download
+      window.currentReports = reports;
+    }
+
+    function displayJSONReport(reports) {
+      resultsDiv.className = 'results show';
+
+      const jsonStr = JSON.stringify(reports, null, 2);
+
+      resultsDiv.innerHTML = `
+        <h2 style="margin-bottom: 20px;">Campaign Data (JSON)</h2>
+        <pre style="background: #f8f9fa; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 12px;">${escapeHtml(jsonStr)}</pre>
+        <button class="download-btn" style="width: 100%; margin-top: 20px;" onclick="downloadJSON()">Download JSON</button>
+      `;
+
+      window.currentReports = reports;
+    }
+
+    function downloadHTML(name, content) {
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name.replace(/[^a-z0-9]/gi, '_')}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadJSON() {
+      const jsonStr = JSON.stringify(window.currentReports, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `klaviyo-campaigns-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadFullReport() {
+      // Generate full HTML report similar to the Node.js version
+      const reports = window.currentReports;
+      const timestamp = new Date().toLocaleString();
+
+      // Build comprehensive report (simplified version)
+      let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Klaviyo Campaign Report</title></head><body>`;
+      html += `<h1>Klaviyo Campaign Performance Report</h1>`;
+      html += `<p>Generated: ${timestamp}</p>`;
+      html += `<p>Total Campaigns: ${reports.length}</p><hr>`;
+
+      reports.forEach(report => {
+        html += `<h2>${escapeHtml(report.campaign.attributes.name)}</h2>`;
+        if (report.metrics) {
+          html += `<p>Recipients: ${report.metrics.recipients} | Opens: ${report.metrics.unique_opens} | Clicks: ${report.metrics.unique_clicks}</p>`;
+          html += `<p>Open Rate: ${report.metrics.open_rate.toFixed(2)}% | Click Rate: ${report.metrics.click_rate.toFixed(2)}%</p>`;
+        }
+        html += `<hr>`;
+      });
+
+      html += `</body></html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `klaviyo-report-${Date.now()}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
