@@ -306,7 +306,10 @@
     });
 
     async function fetchCampaigns(apiKey, limit) {
-      const response = await fetch(`https://a.klaviyo.com/api/campaigns?page[size]=${limit}`, {
+      const params = new URLSearchParams();
+      params.append('page[size]', limit);
+
+      const response = await fetch(`https://a.klaviyo.com/api/campaigns?${params.toString()}`, {
         headers: {
           'Authorization': `Klaviyo-API-Key ${apiKey}`,
           'revision': '2024-10-15',
